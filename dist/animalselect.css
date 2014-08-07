@@ -1,0 +1,33 @@
+select{
+	width:200px;
+	height: 200px;
+}
+.select_buttons_div{
+	display: block;
+	margin: auto;
+}
+
+.double_container{
+	width: 440px;
+}
+
+.double_container>div>div:first-child,.double_container>div>div:last-child{
+	width: 200px;
+}
+
+.double_container .filter_input{
+	width:200px;
+}
+
+.extra-form{
+	width: 200px;
+}
+
+.extra-form input{
+	width:200px;
+}
+
+.numbers{
+	text-align: right;
+	font-size: 13px;
+}
