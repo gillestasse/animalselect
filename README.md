@@ -1,4 +1,4 @@
 animalselect
 ============
 
-![alt tag](https://raw.github.com/gillestasse/animalselect/blob/master/documentation/double1.png)
+![alt tag](https://raw.githubusercontent.com/gillestasse/animalselect/master/documentation/double1.png)
