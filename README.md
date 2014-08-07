@@ -58,6 +58,7 @@ The plugin needs :
 ### Options :
 
 _data : object to be displayed in the list
+
 _service : a service that returns a json object of structure data.herdlist where herlist is the list of animals
 
 
