@@ -55,11 +55,10 @@ if (typeof define === 'function' && define.amd) {
 
 		}else{
 
-			$.getJSON(options._service,{farm_id:1633941}).done(function(data){ 
+			$.getJSON(options._service,{farm_id:options._farm_id}).done(function(data){ 
 				fill_list($("#animals_select_1"),data.herdlist)
 				animals_list=data.herdlist
 				$("#animals_select_1").trigger('loaded');
-				console.info(JSON.stringify(data.herdlist[1]))
 			})
 
 		}
@@ -151,7 +150,6 @@ if (typeof define === 'function' && define.amd) {
 			}else{
 				return _list
 			}
-
 		}
 
 		function filter_left(_list){
