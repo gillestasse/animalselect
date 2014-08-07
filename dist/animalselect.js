@@ -12,7 +12,7 @@ if (typeof define === 'function' && define.amd) {
 
     	var template='\
     	<div class="extra-form">\
-			<input data-attrleft="KYN_NUMER" type="text" placeholder="Kýn" class="filter_left"></input>\
+			<input data-attrleft="KYN_NUMER" type="text" placeholder="Kyn" class="filter_left"></input>\
 			<input data-attrleft="STADA_NUMER" type="text" placeholder="Staða"class="filter_left" ></input>\
 		</div>\
 		<div class="double_container">\
@@ -38,6 +38,10 @@ if (typeof define === 'function' && define.amd) {
 				</div>\
 			</div>\
 		</div>'
+
+		if(options._template){
+			console.info("boop")
+		}
 
     	$(this).html(template)
 		var animals_list;
@@ -74,10 +78,30 @@ if (typeof define === 'function' && define.amd) {
 		
 		function set_listeners(){
 
+			filter1=$("#animals_filter_1")
+			filter2=$("#animals_filter_2")
 			select1=$("#animals_select_1")
 			select2=$("#animals_select_2")
 			right=$("#move_right")
 			left=$("#move_left")
+
+			filter1.on("change keyup",function(){
+				if(/^\d{2}$/.test(filter1.val())){
+					filter1.val(filter1.val()+'-')
+				}
+				if(event.keyCode == 8 && filter1.val().length == 3){
+					filter1.val(filter1.val()[0]+filter1.val()[1])
+				}
+			});
+
+			filter2.on("change keyup",function(){
+				if(/^\d{2}$/.test(filter2.val())){
+					filter2.val(filter2.val()+'-')
+				}
+				if(event.keyCode == 8 && filter2.val().length == 3){
+					filter2.val(filter2.val()[0]+filter2.val()[1])
+				}
+			});
 
 			// left/right button listeners
 			left.on("click",function () {
@@ -158,12 +182,12 @@ if (typeof define === 'function' && define.amd) {
 
 
 			return _.filter(_list, function(animal){
-				
+
 				if( 
 
 					(keys_values[0].val==animal[keys_values[0].key] || keys_values[0].val=='') &&
 					(keys_values[1].val==animal[keys_values[1].key] || keys_values[1].val=='') &&
-					(keys_values[2].val==animal[keys_values[2].key] || keys_values[2].val=='')  
+					(animal[keys_values[2].key].indexOf(keys_values[2].val) > -1 || keys_values[2].val=='')
 
 				){
 
@@ -182,6 +206,7 @@ if (typeof define === 'function' && define.amd) {
 			_.each($('input[data-attrleft]'),function(input){
 				values.push({key:$(input).data('attrleft'),val:$(input).val()})
 			})
+			console.info(values)
 			return values
 		}
 
@@ -191,7 +216,8 @@ if (typeof define === 'function' && define.amd) {
 				if(_numer==animal['NUMER']){
 					return true
 				}
-			})	}
+			})
+		}
 
 		function remove_from_list(value){
 
@@ -199,7 +225,8 @@ if (typeof define === 'function' && define.amd) {
 				if(value==animal['NUMER']){
 					return true
 				}
-			})}
+			})
+		}
 
 		$("body").on("keydown",".filter_left",function(event){
 
