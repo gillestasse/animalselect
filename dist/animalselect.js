@@ -40,7 +40,7 @@ if (typeof define === 'function' && define.amd) {
 		</div>'
 
 		if(options._template){
-			console.info("boop")
+			template=options._template
 		}
 
     	$(this).html(template)
@@ -70,10 +70,9 @@ if (typeof define === 'function' && define.amd) {
 
 
 		function fill_list(_select,_animals){
-			var template_animals = $('#template_animals').html();
 			var html_animals = Mustache.render('{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}',{animals:_animals});
 			_select.html(html_animals);
-			$("#numbers_left").html("("+_animals.length+")")
+			// $("#numbers_left").html("("+_animals.length+")")
 		}
 		
 		function set_listeners(){
@@ -105,38 +104,46 @@ if (typeof define === 'function' && define.amd) {
 
 			// left/right button listeners
 			left.on("click",function () {
+
 				var selectedItems = select2.find('option:selected')
 				select1.append(selectedItems);
 				_.each(selectedItems,function(item,index){
-
-					//rightList.push(find_animal(animals_list,$(item).val()))
 					remove_from_list($(item).val())
-
-					
-					if(rightList.length==0){
-						$("#numbers_right").html("")
-					}else{
-						$("#numbers_right").html("("+rightList.length+")")
-					}
-					
 				})
+
+				if(rightList.length==0){
+					$("#numbers_right").html("")
+				}else{
+					$("#numbers_right").html("("+rightList.length+")")
+				}
+
+				if(select1[0].length==0){
+					$("#numbers_left").html("")
+				}else{
+					$("#numbers_left").html("("+select1[0].length+")")
+				}
 
 			});
 
 			right.on("click",function () {
+
 				var selectedItems = select1.find('option:selected')
 				select2.append(selectedItems);
 				_.each(selectedItems,function(item,index){
-
 					rightList.push(find_animal(animals_list,$(item).val()))
-					
-					if(rightList.length==0){
-						$("#numbers_right").html("")
-					}else{
-						$("#numbers_right").html("("+rightList.length+")")
-					}
-
 				})
+
+				if(rightList.length==0){
+					$("#numbers_right").html("")
+				}else{
+					$("#numbers_right").html("("+rightList.length+")")
+				}
+
+				if(select1[0].length==0){
+					$("#numbers_left").html("")
+				}else{
+					$("#numbers_left").html("("+select1[0].length+")")
+				}
 
 			});
 
@@ -146,11 +153,19 @@ if (typeof define === 'function' && define.amd) {
 				select2.append(selectedItem);
 				select2.trigger("change");
 				rightList.push(find_animal(animals_list,$(selectedItem).val()))
+
 				if(rightList.length==0){
 					$("#numbers_right").html("")
 				}else{
 					$("#numbers_right").html("("+rightList.length+")")
 				}
+
+				if(select1[0].length==0){
+					$("#numbers_left").html("")
+				}else{
+					$("#numbers_left").html("("+select1[0].length+")")
+				}
+
 			})
 
 			select2.on('dblclick',function() {
@@ -158,12 +173,21 @@ if (typeof define === 'function' && define.amd) {
 				select1.append(selectedItem);
 				select1.trigger("change");
 				remove_from_list($(selectedItem).val())
+
 				if(rightList.length==0){
 					$("#numbers_right").html("")
 				}else{
 					$("#numbers_right").html("("+rightList.length+")")
 				}
-			})}
+
+				if(select1[0].length==0){
+					$("#numbers_left").html("")
+				}else{
+					$("#numbers_left").html("("+select1[0].length+")")
+				}
+
+			})
+		}
 
 		function filter_right(_list,value){
 
@@ -179,6 +203,7 @@ if (typeof define === 'function' && define.amd) {
 		function filter_left(_list){
 
 			var keys_values=get_keys_filter()
+
 
 
 			return _.filter(_list, function(animal){
@@ -203,10 +228,14 @@ if (typeof define === 'function' && define.amd) {
 		function get_keys_filter(){
 
 			var values=new Array()
+			_.each($('select[data-attrleft]'),function(input){
+				values.push({key:$(input).data('attrleft'),val:$(input).val()})
+			})
+
 			_.each($('input[data-attrleft]'),function(input){
 				values.push({key:$(input).data('attrleft'),val:$(input).val()})
 			})
-			console.info(values)
+
 			return values
 		}
 
@@ -228,26 +257,19 @@ if (typeof define === 'function' && define.amd) {
 			})
 		}
 
-		$("body").on("keydown",".filter_left",function(event){
+		$("body").on("keyup change",".filter_left",function(event){
+			$("#animals_select_1").html('');
+			var filteredLeft=filter_left(animals_list)
+			fill_list($("#animals_select_1"),filteredLeft)
+			$("#numbers_left").html("("+filteredLeft.length+")")
+		})
 
-			if(event.keyCode == 13 || event.keyCode == 9){
-				event.preventDefault()
-				$("#animals_select_1").html('');
-				var filteredLeft=filter_left(animals_list)
-				fill_list($("#animals_select_1"),filteredLeft)
-				$("#numbers_left").html("("+filteredLeft.length+")")
-				
-			}})
-
-		$("body").on("keydown","#animals_filter_2",function(event){
-
-			if(event.keyCode == 13 || event.keyCode == 9){
-				event.preventDefault()
-				$("#animals_select_2").html('');
-				var filteredRight=filter_right(rightList,$("#animals_filter_2").val())
-				fill_list($("#animals_select_2"),filteredRight)
-
-			}})
+		$("body").on("keyup change","#animals_filter_2",function(event){
+			$("#animals_select_2").html('');
+			var filteredRight=filter_right(rightList,$("#animals_filter_2").val())
+			fill_list($("#animals_select_2"),filteredRight)
+			$("#numbers_right").html("("+filteredRight.length+")")
+		})
 
  		this.get_selected=function(){
  			return rightList
