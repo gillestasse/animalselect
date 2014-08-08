@@ -44,8 +44,8 @@ if (typeof define === 'function' && define.amd) {
 		}
 
     	$(this).html(template)
-		var animals_list;
-		var filteredLeft;
+		var leftList=new Array();
+		var filteredLeft=new Array();
 		var rightList=new Array();
 		var filteredRight=new Array();
 
@@ -54,25 +54,25 @@ if (typeof define === 'function' && define.amd) {
 		if(!options._service){
 
 			fill_list($("#animals_select_1"),options._data)
-			animals_list=options._data
+			leftList=options._data
+			$("#numbers_left").html("("+leftList.length+")")
 			$("#animals_select_1").trigger('loaded');
 
 		}else{
 
 			$.getJSON(options._service,{farm_id:options._farm_id}).done(function(data){ 
 				fill_list($("#animals_select_1"),data.herdlist)
-				animals_list=data.herdlist
+				leftList=data.herdlist
+				$("#numbers_left").html("("+leftList.length+")")
 				$("#animals_select_1").trigger('loaded');
 			})
 
 		}
 
 
-
 		function fill_list(_select,_animals){
 			var html_animals = Mustache.render('{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}',{animals:_animals});
 			_select.html(html_animals);
-			// $("#numbers_left").html("("+_animals.length+")")
 		}
 		
 		function set_listeners(){
@@ -84,6 +84,7 @@ if (typeof define === 'function' && define.amd) {
 			right=$("#move_right")
 			left=$("#move_left")
 
+			// automatic dash for valnr
 			filter1.on("change keyup",function(){
 				if(/^\d{2}$/.test(filter1.val())){
 					filter1.val(filter1.val()+'-')
@@ -103,41 +104,35 @@ if (typeof define === 'function' && define.amd) {
 			});
 
 			// left/right button listeners
-			left.on("click",function () {
+			left.on("click",function() {
 
 				var selectedItems = select2.find('option:selected')
 				select1.append(selectedItems);
 				_.each(selectedItems,function(item,index){
-					remove_from_list($(item).val())
+					leftList.push(find_animal(rightList,$(item).val()))
+					rightList=remove_from_list(rightList,$(item).val())
 				})
+
+				$("#numbers_left").html("("+select1[0].length+")")
 
 				if(rightList.length==0){
 					$("#numbers_right").html("")
 				}else{
 					$("#numbers_right").html("("+rightList.length+")")
-				}
-
-				if(select1[0].length==0){
-					$("#numbers_left").html("")
-				}else{
-					$("#numbers_left").html("("+select1[0].length+")")
 				}
 
 			});
 
-			right.on("click",function () {
+			right.on("click",function() {
 
 				var selectedItems = select1.find('option:selected')
 				select2.append(selectedItems);
 				_.each(selectedItems,function(item,index){
-					rightList.push(find_animal(animals_list,$(item).val()))
+					rightList.push(find_animal(leftList,$(item).val()))
+					leftList=remove_from_list(leftList,$(item).val())
 				})
 
-				if(rightList.length==0){
-					$("#numbers_right").html("")
-				}else{
-					$("#numbers_right").html("("+rightList.length+")")
-				}
+				$("#numbers_right").html("("+rightList.length+")")
 
 				if(select1[0].length==0){
 					$("#numbers_left").html("")
@@ -152,13 +147,10 @@ if (typeof define === 'function' && define.amd) {
 				var selectedItem = select1.find('option:selected')
 				select2.append(selectedItem);
 				select2.trigger("change");
-				rightList.push(find_animal(animals_list,$(selectedItem).val()))
+				rightList.push(find_animal(leftList,$(selectedItem).val()))
+				leftList=remove_from_list(leftList,$(selectedItem).val())
 
-				if(rightList.length==0){
-					$("#numbers_right").html("")
-				}else{
-					$("#numbers_right").html("("+rightList.length+")")
-				}
+				$("#numbers_right").html("("+rightList.length+")")
 
 				if(select1[0].length==0){
 					$("#numbers_left").html("")
@@ -172,7 +164,8 @@ if (typeof define === 'function' && define.amd) {
 				var selectedItem = select2.find('option:selected')
 				select1.append(selectedItem);
 				select1.trigger("change");
-				remove_from_list($(selectedItem).val())
+				leftList.push(find_animal(rightList,$(selectedItem).val()))
+				rightList=remove_from_list(rightList,$(selectedItem).val())
 
 				if(rightList.length==0){
 					$("#numbers_right").html("")
@@ -180,11 +173,7 @@ if (typeof define === 'function' && define.amd) {
 					$("#numbers_right").html("("+rightList.length+")")
 				}
 
-				if(select1[0].length==0){
-					$("#numbers_left").html("")
-				}else{
-					$("#numbers_left").html("("+select1[0].length+")")
-				}
+				$("#numbers_left").html("("+select1[0].length+")")
 
 			})
 		}
@@ -193,7 +182,7 @@ if (typeof define === 'function' && define.amd) {
 
 			if(value.length>0){
 				return _.filter(_list, function(animal){
-					if(animal['VALNR'] == value){ return true }
+					if(animal['VALNR'].indexOf(value) > -1){ return true }
 				})
 			}else{
 				return _list
@@ -203,8 +192,6 @@ if (typeof define === 'function' && define.amd) {
 		function filter_left(_list){
 
 			var keys_values=get_keys_filter()
-
-
 
 			return _.filter(_list, function(animal){
 
@@ -219,8 +206,6 @@ if (typeof define === 'function' && define.amd) {
 					return true
 				}
 
-
-
 			})				
 
 		}
@@ -228,6 +213,7 @@ if (typeof define === 'function' && define.amd) {
 		function get_keys_filter(){
 
 			var values=new Array()
+
 			_.each($('select[data-attrleft]'),function(input){
 				values.push({key:$(input).data('attrleft'),val:$(input).val()})
 			})
@@ -248,10 +234,10 @@ if (typeof define === 'function' && define.amd) {
 			})
 		}
 
-		function remove_from_list(value){
+		function remove_from_list(_list,_numer){
 
-			rightList=_.reject(rightList,function(animal){
-				if(value==animal['NUMER']){
+			return _.reject(_list,function(animal){
+				if(_numer==animal['NUMER']){
 					return true
 				}
 			})
@@ -259,7 +245,7 @@ if (typeof define === 'function' && define.amd) {
 
 		$("body").on("keyup change",".filter_left",function(event){
 			$("#animals_select_1").html('');
-			var filteredLeft=filter_left(animals_list)
+			var filteredLeft=filter_left(leftList)
 			fill_list($("#animals_select_1"),filteredLeft)
 			$("#numbers_left").html("("+filteredLeft.length+")")
 		})
