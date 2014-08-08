@@ -12,7 +12,7 @@ if (typeof define === 'function' && define.amd) {
 
     	var template='\
     	<div class="extra-form">\
-			<input data-attrleft="KYN_NUMER" type="text" placeholder="Kýn" class="filter_left"></input>\
+			<input data-attrleft="KYN_NUMER" type="text" placeholder="Kyn" class="filter_left"></input>\
 			<input data-attrleft="STADA_NUMER" type="text" placeholder="Staða"class="filter_left" ></input>\
 		</div>\
 		<div class="double_container">\
@@ -39,9 +39,13 @@ if (typeof define === 'function' && define.amd) {
 			</div>\
 		</div>'
 
+		if(options._template){
+			template=options._template
+		}
+
     	$(this).html(template)
-		var animals_list;
-		var filteredLeft;
+		var leftList=new Array();
+		var filteredLeft=new Array();
 		var rightList=new Array();
 		var filteredRight=new Array();
 
@@ -50,69 +54,91 @@ if (typeof define === 'function' && define.amd) {
 		if(!options._service){
 
 			fill_list($("#animals_select_1"),options._data)
-			animals_list=options._data
+			leftList=options._data
+			$("#numbers_left").html("("+leftList.length+")")
 			$("#animals_select_1").trigger('loaded');
 
 		}else{
 
 			$.getJSON(options._service,{farm_id:options._farm_id}).done(function(data){ 
 				fill_list($("#animals_select_1"),data.herdlist)
-				animals_list=data.herdlist
+				leftList=data.herdlist
+				$("#numbers_left").html("("+leftList.length+")")
 				$("#animals_select_1").trigger('loaded');
 			})
 
 		}
 
 
-
 		function fill_list(_select,_animals){
-			var template_animals = $('#template_animals').html();
 			var html_animals = Mustache.render('{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}',{animals:_animals});
 			_select.html(html_animals);
-			$("#numbers_left").html("("+_animals.length+")")
 		}
 		
 		function set_listeners(){
 
+			filter1=$("#animals_filter_1")
+			filter2=$("#animals_filter_2")
 			select1=$("#animals_select_1")
 			select2=$("#animals_select_2")
 			right=$("#move_right")
 			left=$("#move_left")
 
+			// automatic dash for valnr
+			filter1.on("change keyup",function(){
+				if(/^\d{2}$/.test(filter1.val())){
+					filter1.val(filter1.val()+'-')
+				}
+				if(event.keyCode == 8 && filter1.val().length == 3){
+					filter1.val(filter1.val()[0]+filter1.val()[1])
+				}
+			});
+
+			filter2.on("change keyup",function(){
+				if(/^\d{2}$/.test(filter2.val())){
+					filter2.val(filter2.val()+'-')
+				}
+				if(event.keyCode == 8 && filter2.val().length == 3){
+					filter2.val(filter2.val()[0]+filter2.val()[1])
+				}
+			});
+
 			// left/right button listeners
-			left.on("click",function () {
+			left.on("click",function() {
+
 				var selectedItems = select2.find('option:selected')
 				select1.append(selectedItems);
 				_.each(selectedItems,function(item,index){
-
-					//rightList.push(find_animal(animals_list,$(item).val()))
-					remove_from_list($(item).val())
-
-					
-					if(rightList.length==0){
-						$("#numbers_right").html("")
-					}else{
-						$("#numbers_right").html("("+rightList.length+")")
-					}
-					
+					leftList.push(find_animal(rightList,$(item).val()))
+					rightList=remove_from_list(rightList,$(item).val())
 				})
+
+				$("#numbers_left").html("("+select1[0].length+")")
+
+				if(rightList.length==0){
+					$("#numbers_right").html("")
+				}else{
+					$("#numbers_right").html("("+rightList.length+")")
+				}
 
 			});
 
-			right.on("click",function () {
+			right.on("click",function() {
+
 				var selectedItems = select1.find('option:selected')
 				select2.append(selectedItems);
 				_.each(selectedItems,function(item,index){
-
-					rightList.push(find_animal(animals_list,$(item).val()))
-					
-					if(rightList.length==0){
-						$("#numbers_right").html("")
-					}else{
-						$("#numbers_right").html("("+rightList.length+")")
-					}
-
+					rightList.push(find_animal(leftList,$(item).val()))
+					leftList=remove_from_list(leftList,$(item).val())
 				})
+
+				$("#numbers_right").html("("+rightList.length+")")
+
+				if(select1[0].length==0){
+					$("#numbers_left").html("")
+				}else{
+					$("#numbers_left").html("("+select1[0].length+")")
+				}
 
 			});
 
@@ -121,31 +147,42 @@ if (typeof define === 'function' && define.amd) {
 				var selectedItem = select1.find('option:selected')
 				select2.append(selectedItem);
 				select2.trigger("change");
-				rightList.push(find_animal(animals_list,$(selectedItem).val()))
-				if(rightList.length==0){
-					$("#numbers_right").html("")
+				rightList.push(find_animal(leftList,$(selectedItem).val()))
+				leftList=remove_from_list(leftList,$(selectedItem).val())
+
+				$("#numbers_right").html("("+rightList.length+")")
+
+				if(select1[0].length==0){
+					$("#numbers_left").html("")
 				}else{
-					$("#numbers_right").html("("+rightList.length+")")
+					$("#numbers_left").html("("+select1[0].length+")")
 				}
+
 			})
 
 			select2.on('dblclick',function() {
 				var selectedItem = select2.find('option:selected')
 				select1.append(selectedItem);
 				select1.trigger("change");
-				remove_from_list($(selectedItem).val())
+				leftList.push(find_animal(rightList,$(selectedItem).val()))
+				rightList=remove_from_list(rightList,$(selectedItem).val())
+
 				if(rightList.length==0){
 					$("#numbers_right").html("")
 				}else{
 					$("#numbers_right").html("("+rightList.length+")")
 				}
-			})}
+
+				$("#numbers_left").html("("+select1[0].length+")")
+
+			})
+		}
 
 		function filter_right(_list,value){
 
 			if(value.length>0){
 				return _.filter(_list, function(animal){
-					if(animal['VALNR'] == value){ return true }
+					if(animal['VALNR'].indexOf(value) > -1){ return true }
 				})
 			}else{
 				return _list
@@ -156,21 +193,18 @@ if (typeof define === 'function' && define.amd) {
 
 			var keys_values=get_keys_filter()
 
-
 			return _.filter(_list, function(animal){
-				
+
 				if( 
 
 					(keys_values[0].val==animal[keys_values[0].key] || keys_values[0].val=='') &&
 					(keys_values[1].val==animal[keys_values[1].key] || keys_values[1].val=='') &&
-					(keys_values[2].val==animal[keys_values[2].key] || keys_values[2].val=='')  
+					(animal[keys_values[2].key].indexOf(keys_values[2].val) > -1 || keys_values[2].val=='')
 
 				){
 
 					return true
 				}
-
-
 
 			})				
 
@@ -179,9 +213,15 @@ if (typeof define === 'function' && define.amd) {
 		function get_keys_filter(){
 
 			var values=new Array()
+
+			_.each($('select[data-attrleft]'),function(input){
+				values.push({key:$(input).data('attrleft'),val:$(input).val()})
+			})
+
 			_.each($('input[data-attrleft]'),function(input){
 				values.push({key:$(input).data('attrleft'),val:$(input).val()})
 			})
+
 			return values
 		}
 
@@ -191,36 +231,31 @@ if (typeof define === 'function' && define.amd) {
 				if(_numer==animal['NUMER']){
 					return true
 				}
-			})	}
+			})
+		}
 
-		function remove_from_list(value){
+		function remove_from_list(_list,_numer){
 
-			rightList=_.reject(rightList,function(animal){
-				if(value==animal['NUMER']){
+			return _.reject(_list,function(animal){
+				if(_numer==animal['NUMER']){
 					return true
 				}
-			})}
+			})
+		}
 
-		$("body").on("keydown",".filter_left",function(event){
+		$("body").on("keyup change",".filter_left",function(event){
+			$("#animals_select_1").html('');
+			var filteredLeft=filter_left(leftList)
+			fill_list($("#animals_select_1"),filteredLeft)
+			$("#numbers_left").html("("+filteredLeft.length+")")
+		})
 
-			if(event.keyCode == 13 || event.keyCode == 9){
-				event.preventDefault()
-				$("#animals_select_1").html('');
-				var filteredLeft=filter_left(animals_list)
-				fill_list($("#animals_select_1"),filteredLeft)
-				$("#numbers_left").html("("+filteredLeft.length+")")
-				
-			}})
-
-		$("body").on("keydown","#animals_filter_2",function(event){
-
-			if(event.keyCode == 13 || event.keyCode == 9){
-				event.preventDefault()
-				$("#animals_select_2").html('');
-				var filteredRight=filter_right(rightList,$("#animals_filter_2").val())
-				fill_list($("#animals_select_2"),filteredRight)
-
-			}})
+		$("body").on("keyup change","#animals_filter_2",function(event){
+			$("#animals_select_2").html('');
+			var filteredRight=filter_right(rightList,$("#animals_filter_2").val())
+			fill_list($("#animals_select_2"),filteredRight)
+			$("#numbers_right").html("("+filteredRight.length+")")
+		})
 
  		this.get_selected=function(){
  			return rightList
