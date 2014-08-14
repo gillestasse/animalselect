@@ -1,12 +1,12 @@
 (function (factory) {
 if (typeof define === 'function' && define.amd) {
     // AMD. Register as an anonymous module depending on jQuery.
-    define(['jquery'], factory);
+    define(['jquery','mustache'], factory);
 } else {
     // No AMD. Register plugin with global jQuery object.
     factory(jQuery);
 }
-}(function ($) {
+}(function ($,mustache) {
 
     $.fn.animalselect = function (options) {
 
@@ -71,7 +71,7 @@ if (typeof define === 'function' && define.amd) {
 
 
 		function fill_list(_select,_animals){
-			var html_animals = Mustache.render('{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}',{animals:_animals});
+			var html_animals = mustache.render('{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}',{animals:_animals});
 			_select.html(html_animals);
 		}
 		
@@ -167,13 +167,13 @@ if (typeof define === 'function' && define.amd) {
 				leftList.push(find_animal(rightList,$(selectedItem).val()))
 				rightList=remove_from_list(rightList,$(selectedItem).val())
 
+				$("#numbers_left").html("("+select1[0].length+")")
+
 				if(rightList.length==0){
 					$("#numbers_right").html("")
 				}else{
 					$("#numbers_right").html("("+rightList.length+")")
 				}
-
-				$("#numbers_left").html("("+select1[0].length+")")
 
 			})
 		}
