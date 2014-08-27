@@ -56,7 +56,6 @@ if (typeof define === 'function' && define.amd) {
 			fill_list($("#animals_select_1"),options._data)
 			leftList=options._data
 			$("#numbers_left").html("("+leftList.length+")")
-			$("#animals_select_1").trigger('loaded');
 
 		}else{
 
@@ -189,24 +188,54 @@ if (typeof define === 'function' && define.amd) {
 			}
 		}
 
-		function filter_left(_list){
+		function filter_left(_list){	// todo: implement a more dynamic way to deal with filters
 
 			var keys_values=get_keys_filter()
 
-			return _.filter(_list, function(animal){
+			if(keys_values.length == 1){
 
-				if( 
+				return _.filter(_list, function(animal){
+					if(animal[keys_values[0].key] && animal[keys_values[0].key].indexOf(keys_values[0].val) > -1 || keys_values[0].val==''){
+						return true
+					}
+				})
 
-					(keys_values[0].val==animal[keys_values[0].key] || keys_values[0].val=='') &&
-					(keys_values[1].val==animal[keys_values[1].key] || keys_values[1].val=='') &&
-					(animal[keys_values[2].key].indexOf(keys_values[2].val) > -1 || keys_values[2].val=='')
+			}else if(keys_values.length == 2){
 
-				){
+				return _.filter(_list, function(animal){
+					if( 
+						(keys_values[0].val==animal[keys_values[0].key] || keys_values[0].val=='') &&
+						(animal[keys_values[1].key] && animal[keys_values[1].key].indexOf(keys_values[1].val) > -1 || keys_values[1].val=='')
+					){
+						return true
+					}
+				})
 
-					return true
-				}
+			}else if(keys_values.length == 3){
 
-			})				
+				return _.filter(_list, function(animal){
+					if( 
+						(keys_values[0].val==animal[keys_values[0].key] || keys_values[0].val=='') &&
+						(keys_values[1].val==animal[keys_values[1].key] || keys_values[1].val=='') &&
+						(animal[keys_values[2].key] && animal[keys_values[2].key].indexOf(keys_values[2].val) > -1 || keys_values[2].val=='')
+					){
+						return true
+					}
+				})
+
+			}
+
+			// return _.filter(_list, function(animal){		// old implementation before 27-08-14
+
+			// 	if( 
+			// 		(keys_values[0].val==animal[keys_values[0].key] || keys_values[0].val=='') &&
+			// 		(keys_values[1].val==animal[keys_values[1].key] || keys_values[1].val=='') &&
+			// 		(animal[keys_values[2].key].indexOf(keys_values[2].val) > -1 || keys_values[2].val=='')
+			// 	){
+			// 		return true
+			// 	}
+
+			// })
 
 		}
 
