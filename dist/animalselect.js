@@ -39,8 +39,14 @@ if (typeof define === 'function' && define.amd) {
 			</div>\
 		</div>'
 
+		var option_tpl='{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}'
+
 		if(options._template){
 			template=options._template
+		}
+
+		if(options._option_tpl){
+			option_tpl=options._option_tpl
 		}
 
     	$(this).html(template)
@@ -63,14 +69,14 @@ if (typeof define === 'function' && define.amd) {
 				fill_list($("#animals_select_1"),data.herdlist)
 				leftList=data.herdlist
 				$("#numbers_left").html("("+leftList.length+")")
-				$("#animals_select_1").trigger('loaded');
+				$("#animals_select_1").trigger('loaded',data);
 			})
 
 		}
 
 
 		function fill_list(_select,_animals){
-			var html_animals = mustache.render('{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}',{animals:_animals});
+			var html_animals = mustache.render(option_tpl,{animals:_animals});
 			_select.html(html_animals);
 		}
 		
