@@ -63,6 +63,8 @@ _service : a service that returns a json object of structure data.herdlist where
 
 _template : replaces the default html template
 
+_option_tpl : replaces the default option template
+
 
 ### Methods :
 
