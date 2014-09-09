@@ -91,6 +91,16 @@ if (typeof define === 'function' && define.amd) {
 				if(event.keyCode == 8 && filter1.val().length == 3){
 					filter1.val(filter1.val()[0]+filter1.val()[1])
 				}
+				if(event.keyCode == 13){
+					$('#animals_select_1 option').prop('selected', 'selected');
+					var selectedItems = select1.find('option:selected')
+					select2.append(selectedItems);
+					_.each(selectedItems,function(item,index){
+						rightList.push(find_animal(leftList,$(item).val()))
+						leftList=remove_from_list(leftList,$(item).val())
+					})
+					filter1.select()
+				}
 			});
 
 			filter2.on("change keyup",function(){
@@ -99,6 +109,16 @@ if (typeof define === 'function' && define.amd) {
 				}
 				if(event.keyCode == 8 && filter2.val().length == 3){
 					filter2.val(filter2.val()[0]+filter2.val()[1])
+				}
+				if(event.keyCode == 13){
+					$('#animals_select_2 option').prop('selected', 'selected');
+					var selectedItems = select2.find('option:selected')
+					select1.append(selectedItems);
+					_.each(selectedItems,function(item,index){
+						leftList.push(find_animal(rightList,$(item).val()))
+						rightList=remove_from_list(rightList,$(item).val())
+					})
+					filter2.select()
 				}
 			});
 
@@ -189,7 +209,6 @@ if (typeof define === 'function' && define.amd) {
 		}
 
 		function filter_left(_list){	// todo: implement a more dynamic way to deal with filters
-
 			var keys_values=get_keys_filter()
 
 			if(keys_values.length == 1){
