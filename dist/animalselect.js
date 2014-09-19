@@ -100,7 +100,7 @@ if (typeof define === 'function' && define.amd) {
 				if(event.keyCode == 13){
 					$('#animals_select_1 option').prop('selected', 'selected');
 					var selectedItems = select1.find('option:selected')
-					select2.append(selectedItems);
+					select2.prepend(selectedItems);
 					_.each(selectedItems,function(item,index){
 						rightList.push(find_animal(leftList,$(item).val()))
 						leftList=remove_from_list(leftList,$(item).val())
@@ -119,7 +119,7 @@ if (typeof define === 'function' && define.amd) {
 				if(event.keyCode == 13){
 					$('#animals_select_2 option').prop('selected', 'selected');
 					var selectedItems = select2.find('option:selected')
-					select1.append(selectedItems);
+					select1.prepend(selectedItems);
 					_.each(selectedItems,function(item,index){
 						leftList.push(find_animal(rightList,$(item).val()))
 						rightList=remove_from_list(rightList,$(item).val())
@@ -132,7 +132,7 @@ if (typeof define === 'function' && define.amd) {
 			left.on("click",function() {
 
 				var selectedItems = select2.find('option:selected')
-				select1.append(selectedItems);
+				select1.prepend(selectedItems);
 				_.each(selectedItems,function(item,index){
 					leftList.push(find_animal(rightList,$(item).val()))
 					rightList=remove_from_list(rightList,$(item).val())
@@ -151,7 +151,7 @@ if (typeof define === 'function' && define.amd) {
 			right.on("click",function() {
 
 				var selectedItems = select1.find('option:selected')
-				select2.append(selectedItems);
+				select2.prepend(selectedItems);
 				_.each(selectedItems,function(item,index){
 					rightList.push(find_animal(leftList,$(item).val()))
 					leftList=remove_from_list(leftList,$(item).val())
@@ -170,7 +170,7 @@ if (typeof define === 'function' && define.amd) {
 			// doubleclick listeners
 			select1.on('dblclick',function() {
 				var selectedItem = select1.find('option:selected')
-				select2.append(selectedItem);
+				select2.prepend(selectedItem);
 				select2.trigger("change");
 				rightList.push(find_animal(leftList,$(selectedItem).val()))
 				leftList=remove_from_list(leftList,$(selectedItem).val())
@@ -187,7 +187,7 @@ if (typeof define === 'function' && define.amd) {
 
 			select2.on('dblclick',function() {
 				var selectedItem = select2.find('option:selected')
-				select1.append(selectedItem);
+				select1.prepend(selectedItem);
 				select1.trigger("change");
 				leftList.push(find_animal(rightList,$(selectedItem).val()))
 				rightList=remove_from_list(rightList,$(selectedItem).val())
