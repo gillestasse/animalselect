@@ -282,6 +282,18 @@ if (typeof define === 'function' && define.amd) {
 				values.push({key:$(input).data('attrleft'),val:$(input).val()})
 			})
 
+			// temporary solution to make sure valnr is always last, to be fixed along with filter_left()
+			if(values[values.length - 1]['key'] != 'VALNR'){
+				var key_valnr
+				_.each(values,function(val,index){
+					if(val['key'] == 'VALNR'){
+						key_valnr = val
+						values.splice( index, 1 )
+						values.push(key_valnr)
+					}
+				})
+			}
+
 			return values
 		}
 
