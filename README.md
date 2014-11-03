@@ -65,6 +65,8 @@ _template : replaces the default html template
 
 _option_tpl : replaces the default option template
 
+_filter_type : replaces the default filter type
+
 
 ### Methods :
 
