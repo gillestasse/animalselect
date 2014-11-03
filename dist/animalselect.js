@@ -41,12 +41,18 @@ if (typeof define === 'function' && define.amd) {
 
 		var option_tpl='{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}'
 
+		var filter_type = 'VALNR'
+
 		if(options._template){
 			template=options._template
 		}
 
 		if(options._option_tpl){
 			option_tpl=options._option_tpl
+		}
+
+		if(options._filter_type){
+			filter_type=options._filter_type
 		}
 
     	$(this).html(template)
@@ -80,6 +86,7 @@ if (typeof define === 'function' && define.amd) {
 			_select.html(html_animals);
 		}
 		
+
 		function set_listeners(){
 
 			filter1=$("#animals_filter_1")
@@ -91,10 +98,10 @@ if (typeof define === 'function' && define.amd) {
 
 			// automatic dash for valnr
 			filter1.on("change keyup",function(){
-				if(/^\d{2}$/.test(filter1.val())){
+				if(filter_type=="VALNR" && /^\d{2}$/.test(filter1.val())){
 					filter1.val(filter1.val()+'-')
 				}
-				if(event.keyCode == 8 && filter1.val().length == 3){
+				if(filter_type=="VALNR" && event.keyCode == 8 && filter1.val().length == 3){
 					filter1.val(filter1.val()[0]+filter1.val()[1])
 				}
 				if(event.keyCode == 13){
@@ -111,10 +118,10 @@ if (typeof define === 'function' && define.amd) {
 			});
 
 			filter2.on("change keyup",function(){
-				if(/^\d{2}$/.test(filter2.val())){
+				if(filter_type=="VALNR" && /^\d{2}$/.test(filter2.val())){
 					filter2.val(filter2.val()+'-')
 				}
-				if(event.keyCode == 8 && filter2.val().length == 3){
+				if(filter_type=="VALNR" && event.keyCode == 8 && filter2.val().length == 3){
 					filter2.val(filter2.val()[0]+filter2.val()[1])
 				}
 				if(event.keyCode == 13){
@@ -213,7 +220,7 @@ if (typeof define === 'function' && define.amd) {
 
 			if(value.length>0){
 				return _.filter(_list, function(animal){
-					if(animal['VALNR'].indexOf(value) > -1){ return true }
+					if(animal[filter_type].indexOf(value) > -1){ return true }
 				})
 			}else{
 				return _list
@@ -283,10 +290,10 @@ if (typeof define === 'function' && define.amd) {
 			})
 
 			// temporary solution to make sure valnr is always last, to be fixed along with filter_left()
-			if(values[values.length - 1]['key'] != 'VALNR'){
+			if(values[values.length - 1]['key'] != filter_type){
 				var key_valnr
 				_.each(values,function(val,index){
-					if(val['key'] == 'VALNR'){
+					if(val['key'] == filter_type){
 						key_valnr = val
 						values.splice( index, 1 )
 						values.push(key_valnr)
