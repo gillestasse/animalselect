@@ -98,12 +98,10 @@ if (typeof define === 'function' && define.amd) {
 
 			// automatic dash for valnr
 			filter1.on("change keyup",function(){
-				if(filter_type=="VALNR" && /^\d{2}$/.test(filter1.val())){
+				if(event.keyCode != 8 && filter_type=="VALNR" && /^\d{2}$/.test(filter1.val())){
 					filter1.val(filter1.val()+'-')
 				}
-				if(filter_type=="VALNR" && event.keyCode == 8 && filter1.val().length == 3){
-					filter1.val(filter1.val()[0]+filter1.val()[1])
-				}
+
 				if(event.keyCode == 13){
 					$('#animals_select_1 option').prop('selected', 'selected');
 					var selectedItems = select1.find('option:selected')
@@ -118,12 +116,10 @@ if (typeof define === 'function' && define.amd) {
 			});
 
 			filter2.on("change keyup",function(){
-				if(filter_type=="VALNR" && /^\d{2}$/.test(filter2.val())){
+				if(event.keyCode != 8 && filter_type=="VALNR" && /^\d{2}$/.test(filter2.val())){
 					filter2.val(filter2.val()+'-')
 				}
-				if(filter_type=="VALNR" && event.keyCode == 8 && filter2.val().length == 3){
-					filter2.val(filter2.val()[0]+filter2.val()[1])
-				}
+
 				if(event.keyCode == 13){
 					$('#animals_select_2 option').prop('selected', 'selected');
 					var selectedItems = select2.find('option:selected')
