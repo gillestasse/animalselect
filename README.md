@@ -67,6 +67,8 @@ _option_tpl : replaces the default option template
 
 _filter_type : replaces the default filter type
 
+_selected : these animals are populating the second list on startup
+
 
 ### Methods :
 
