@@ -163,7 +163,7 @@
 							leftList = remove_from_list(leftList, $(item).val())
 						})
 						filter1.select()
-					}, 10);
+					}, 100);
 				}
 			});
 
@@ -184,7 +184,7 @@
 							rightList = remove_from_list(rightList, $(item).val())
 						})
 						filter2.select()
-					}, 10);
+					}, 100);
 				}
 			});
 
