@@ -44,16 +44,19 @@ The plugin needs :
 ### The javscript :
 
 ```
-			$(document).ready(function set(){
-				//var myselect=$(".test").animalselect({_service:'grid/getLocalHerd'})
-				var myselect=$(".test").animalselect({
-					_data:[{"KYN_NUMER":2,"NUMER":383689,"STADA_NUMER":1,"VALNR":"84-171"},{"KYN_NUMER":2,"NUMER":383681,"STADA_NUM            ER":1,"VALNR":"84-172"}]
-				})
+	$(document).ready(function set(){
+		//var myselect=$(".test").animalselect({_service:'grid/getLocalHerd'})
+		var myselect=$(".test").animalselect({												_data:[{"KYN_NUMER":2,"NUMER":383689,"STADA_NUMER":1,"VALNR":"84-171"},{"KYN_NUMER":2,"NUMER":383681,"STADA_NUMER":1,"VALNR":"84-172"}]
+		})
 
-				$(myselect).on('loaded',function(){console.info('lode')})
-			})
+		$(myselect).on('loaded',function(){console.info('lode')})
+	})
 			
 ```
+
+In order for the filter to work :
+
+$("#animals_filter_1").data("attrleft","VALNR")
 
 ### Options :
 
@@ -63,8 +66,31 @@ _service : a service that returns a json object of structure data.herdlist where
 
 _template : replaces the default html template
 
+_option_tpl : replaces the default option template
+
+_filter_type : replaces the default filter type
+
+_selected : these animals are populating the second list on startup
+
 
 ### Methods :
 
  get_selected : returns the list of selected object of the list
+ 
+ 
+ ### Using with another version of bootstrap
+ 
+ When component is loaded : 
+ 
+	$($("#animalselect>.row")[1]).css("display","inline-flex")
+	$($("#animalselect>.row")[0]).css("height","20px")
+	$("#animalselect>.row").css("margin-top","10px")
+	$($("#animalselect>.row")[1]).css("margin-top","25px")
+	$("#select_button_div").css("display","table-caption")
+	$("#animals_filter_1").css("margin-left","17px")
+	$("#animals_filter_1").css("border-radius","0px")
+	$("#animals_filter_1").css("width","190px")
+	$("#animals_select_1").css("margin-left","14px")
+	
+
  

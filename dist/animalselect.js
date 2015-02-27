@@ -1,16 +1,16 @@
-(function (factory) {
-if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module depending on jQuery.
-    define(['jquery'], factory);
-} else {
-    // No AMD. Register plugin with global jQuery object.
-    factory(jQuery);
-}
-}(function ($) {
+(function(factory) {
+	if (typeof define === 'function' && define.amd) {
+		// AMD. Register as an anonymous module depending on jQuery.
+		define(['jquery', 'mustache'], factory);
+	} else {
+		// No AMD. Register plugin with global jQuery object.
+		factory(jQuery);
+	}
+}(function($, mustache) {
 
-    $.fn.animalselect = function (options) {
+	$.fn.animalselect = function(options) {
 
-    	var template='\
+		var template = '\
     	<div class="extra-form">\
 			<input data-attrleft="KYN_NUMER" type="text" placeholder="Kyn" class="filter_left"></input>\
 			<input data-attrleft="STADA_NUMER" type="text" placeholder="Staða"class="filter_left" ></input>\
@@ -39,230 +39,386 @@ if (typeof define === 'function' && define.amd) {
 			</div>\
 		</div>'
 
-		if(options._template){
-			template=options._template
+		var option_tpl = '{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}'
+
+		var filter_type = 'VALNR'
+
+		var selectedAnimals = null
+
+		if (options._template) {
+			template = options._template
 		}
 
-    	$(this).html(template)
-		var leftList=new Array();
-		var filteredLeft=new Array();
-		var rightList=new Array();
-		var filteredRight=new Array();
+		if (options._option_tpl) {
+			option_tpl = options._option_tpl
+		}
+
+		if (options._filter_type) {
+			filter_type = options._filter_type
+		}
+
+		if (options._selected) {
+			selectedAnimals = options._selected
+		}
+
+		$(this).html(template)
+		var leftList = new Array();
+		var filteredLeft = new Array();
+		var rightList = new Array();
+		var filteredRight = new Array();
 
 		set_listeners()
 
-		if(!options._service){
+		if (!options._service) {
 
-			fill_list($("#animals_select_1"),options._data)
-			leftList=options._data
-			$("#numbers_left").html("("+leftList.length+")")
-			$("#animals_select_1").trigger('loaded');
+			fill_list($("#animals_select_1"), options._data, selectedAnimals)
+			leftList = options._data
+			$("#numbers_left").html("(" + leftList.length + ")")
 
-		}else{
+		} else {
 
-			$.getJSON(options._service,{farm_id:options._farm_id}).done(function(data){ 
-				fill_list($("#animals_select_1"),data.herdlist)
-				leftList=data.herdlist
-				$("#numbers_left").html("("+leftList.length+")")
-				$("#animals_select_1").trigger('loaded');
+			$.getJSON(options._service, {
+				farm_id: options._farm_id
+			}).done(function(data) {
+				fill_list($("#animals_select_1"), data.herdlist, selectedAnimals)
+				leftList = data.herdlist
+				$("#numbers_left").html("(" + leftList.length + ")")
+				$("#animals_select_1").trigger('loaded', data);
 			})
 
 		}
 
-
-		function fill_list(_select,_animals){
-			var html_animals = Mustache.render('{{#animals}}<option value="{{NUMER}}">{{VALNR}}</option>{{/animals}}',{animals:_animals});
+		/*
+			_selected: places selected animals into the second select box, only used when initialized
+		*/
+		function fill_list(_select, _animals, _selected) {
+			var html_animals = mustache.render(option_tpl, {
+				animals: _animals
+			});
 			_select.html(html_animals);
+
+			if (_selected) {
+				_.each(_selected, function(item, index) {
+					$('#animals_select_1 option[value="'+item['NUMER']+'"]').prop('selected',true)
+					rightList.push(item)
+					leftList = remove_from_list(leftList, item['NUMER'])
+				})
+				var selectedItems = $("#animals_select_1").find('option:selected')
+				$("#animals_select_2").prepend(selectedItems);
+				$("#animals_select_2").sort_select_box()
+			}
+
 		}
-		
-		function set_listeners(){
 
-			filter1=$("#animals_filter_1")
-			filter2=$("#animals_filter_2")
-			select1=$("#animals_select_1")
-			select2=$("#animals_select_2")
-			right=$("#move_right")
-			left=$("#move_left")
 
-			// automatic dash for valnr
-			filter1.on("change keyup",function(){
-				if(/^\d{2}$/.test(filter1.val())){
-					filter1.val(filter1.val()+'-')
-				}
-				if(event.keyCode == 8 && filter1.val().length == 3){
-					filter1.val(filter1.val()[0]+filter1.val()[1])
+		function set_listeners() {
+
+			filter1 = $("#animals_filter_1")
+			filter2 = $("#animals_filter_2")
+			select1 = $("#animals_select_1")
+			select2 = $("#animals_select_2")
+			right = $("#move_right")
+			left = $("#move_left")
+
+			// add zeroes to lambanumer
+			filter1.on("keydown", function() {
+				if (event.keyCode == 13 && filter_type == "LAMBANUMER") {
+					if(filter1.val().length == 1){
+						filter1.val( "000"+filter1.val() )
+					}else if(filter1.val().length == 2){
+						filter1.val( "00"+filter1.val() )
+					}else if(filter1.val().length == 3){
+						filter1.val( "0"+filter1.val() )
+					}
 				}
 			});
 
-			filter2.on("change keyup",function(){
-				if(/^\d{2}$/.test(filter2.val())){
-					filter2.val(filter2.val()+'-')
+			filter2.on("keydown", function() {
+				if (event.keyCode == 13 && filter_type == "LAMBANUMER") {
+					if(filter2.val().length == 1){
+						filter2.val( "000"+filter2.val() )
+					}else if(filter2.val().length == 2){
+						filter2.val( "00"+filter2.val() )
+					}else if(filter1.val().length == 3){
+						filter2.val( "0"+filter2.val() )
+					}
 				}
-				if(event.keyCode == 8 && filter2.val().length == 3){
-					filter2.val(filter2.val()[0]+filter2.val()[1])
+			});
+
+			// enter on filter
+			filter1.on("change keyup", function() {
+				// automatic dash for valnr
+				if (event.keyCode != 8 && filter_type == "VALNR" && /^\d{2}$/.test(filter1.val())) {
+					filter1.val(filter1.val() + '-')
+				}
+	
+				if (event.keyCode == 13) {
+					setTimeout(function() {		// timeout to give above listener time to add zeroes to lambanumer
+						$('#animals_select_1 option').prop('selected', 'selected');
+						var selectedItems = select1.find('option:selected')
+						select2.prepend(selectedItems);
+						select2.sort_select_box()
+						_.each(selectedItems, function(item, index) {
+							rightList.push(find_animal(leftList, $(item).val()))
+							leftList = remove_from_list(leftList, $(item).val())
+						})
+						filter1.select()
+					}, 100);
+				}
+			});
+
+			filter2.on("change keyup", function() {
+				// automatic dash for valnr
+				if (event.keyCode != 8 && filter_type == "VALNR" && /^\d{2}$/.test(filter2.val())) {
+					filter2.val(filter2.val() + '-')
+				}
+
+				if (event.keyCode == 13) {
+					setTimeout(function() {		// timeout to give above listener time to add zeroes to lambanumer
+						$('#animals_select_2 option').prop('selected', 'selected');
+						var selectedItems = select2.find('option:selected')
+						select1.prepend(selectedItems);
+						select1.sort_select_box()
+						_.each(selectedItems, function(item, index) {
+							leftList.push(find_animal(rightList, $(item).val()))
+							rightList = remove_from_list(rightList, $(item).val())
+						})
+						filter2.select()
+					}, 100);
 				}
 			});
 
 			// left/right button listeners
-			left.on("click",function() {
+			left.on("click", function() {
 
 				var selectedItems = select2.find('option:selected')
-				select1.append(selectedItems);
-				_.each(selectedItems,function(item,index){
-					leftList.push(find_animal(rightList,$(item).val()))
-					rightList=remove_from_list(rightList,$(item).val())
+				select1.prepend(selectedItems);
+				select1.sort_select_box()
+				_.each(selectedItems, function(item, index) {
+					leftList.push(find_animal(rightList, $(item).val()))
+					rightList = remove_from_list(rightList, $(item).val())
 				})
 
-				$("#numbers_left").html("("+select1[0].length+")")
+				$("#numbers_left").html("(" + select1[0].length + ")")
 
-				if(rightList.length==0){
+				if (rightList.length == 0) {
 					$("#numbers_right").html("")
-				}else{
-					$("#numbers_right").html("("+rightList.length+")")
+				} else {
+					$("#numbers_right").html("(" + rightList.length + ")")
 				}
 
 			});
 
-			right.on("click",function() {
+			right.on("click", function() {
 
 				var selectedItems = select1.find('option:selected')
-				select2.append(selectedItems);
-				_.each(selectedItems,function(item,index){
-					rightList.push(find_animal(leftList,$(item).val()))
-					leftList=remove_from_list(leftList,$(item).val())
+				select2.prepend(selectedItems);
+				select2.sort_select_box()
+				_.each(selectedItems, function(item, index) {
+					rightList.push(find_animal(leftList, $(item).val()))
+					leftList = remove_from_list(leftList, $(item).val())
 				})
 
-				$("#numbers_right").html("("+rightList.length+")")
+				$("#numbers_right").html("(" + rightList.length + ")")
 
-				if(select1[0].length==0){
+				if (select1[0].length == 0) {
 					$("#numbers_left").html("")
-				}else{
-					$("#numbers_left").html("("+select1[0].length+")")
+				} else {
+					$("#numbers_left").html("(" + select1[0].length + ")")
 				}
 
 			});
 
 			// doubleclick listeners
-			select1.on('dblclick',function() {
+			select1.on('dblclick', function() {
 				var selectedItem = select1.find('option:selected')
-				select2.append(selectedItem);
+				select2.prepend(selectedItem);
+				select2.sort_select_box()
 				select2.trigger("change");
-				rightList.push(find_animal(leftList,$(selectedItem).val()))
-				leftList=remove_from_list(leftList,$(selectedItem).val())
+				rightList.push(find_animal(leftList, $(selectedItem).val()))
+				leftList = remove_from_list(leftList, $(selectedItem).val())
 
-				$("#numbers_right").html("("+rightList.length+")")
+				$("#numbers_right").html("(" + rightList.length + ")")
 
-				if(select1[0].length==0){
+				if (select1[0].length == 0) {
 					$("#numbers_left").html("")
-				}else{
-					$("#numbers_left").html("("+select1[0].length+")")
+				} else {
+					$("#numbers_left").html("(" + select1[0].length + ")")
 				}
 
 			})
 
-			select2.on('dblclick',function() {
+			select2.on('dblclick', function() {
 				var selectedItem = select2.find('option:selected')
-				select1.append(selectedItem);
+				select1.prepend(selectedItem);
+				select1.sort_select_box()
 				select1.trigger("change");
-				leftList.push(find_animal(rightList,$(selectedItem).val()))
-				rightList=remove_from_list(rightList,$(selectedItem).val())
+				leftList.push(find_animal(rightList, $(selectedItem).val()))
+				rightList = remove_from_list(rightList, $(selectedItem).val())
 
-				if(rightList.length==0){
+				$("#numbers_left").html("(" + select1[0].length + ")")
+
+				if (rightList.length == 0) {
 					$("#numbers_right").html("")
-				}else{
-					$("#numbers_right").html("("+rightList.length+")")
+				} else {
+					$("#numbers_right").html("(" + rightList.length + ")")
 				}
-
-				$("#numbers_left").html("("+select1[0].length+")")
 
 			})
 		}
 
-		function filter_right(_list,value){
+		function filter_right(_list, value) {
 
-			if(value.length>0){
-				return _.filter(_list, function(animal){
-					if(animal['VALNR'].indexOf(value) > -1){ return true }
+			if (value.length > 0) {
+				return _.filter(_list, function(animal) {
+					if (animal[filter_type].indexOf(value) > -1) {
+						return true
+					}
 				})
-			}else{
+			} else {
 				return _list
 			}
 		}
 
-		function filter_left(_list){
+		function filter_left(_list) { // todo: implement a more dynamic way to deal with filters
+			var keys_values = get_keys_filter()
 
-			var keys_values=get_keys_filter()
+			if (keys_values.length == 1) {
 
-			return _.filter(_list, function(animal){
+				return _.filter(_list, function(animal) {
+					if (animal[keys_values[0].key] && animal[keys_values[0].key].indexOf(keys_values[0].val) > -1 || keys_values[0].val == '') {
+						return true
+					}
+				})
 
-				if( 
+			} else if (keys_values.length == 2) {
 
-					(keys_values[0].val==animal[keys_values[0].key] || keys_values[0].val=='') &&
-					(keys_values[1].val==animal[keys_values[1].key] || keys_values[1].val=='') &&
-					(animal[keys_values[2].key].indexOf(keys_values[2].val) > -1 || keys_values[2].val=='')
+				return _.filter(_list, function(animal) {
+					if (
+						(keys_values[0].val == animal[keys_values[0].key] || keys_values[0].val == '') &&
+						(animal[keys_values[1].key] && animal[keys_values[1].key].indexOf(keys_values[1].val) > -1 || keys_values[1].val == '')
+					) {
+						return true
+					}
+				})
 
-				){
+			} else if (keys_values.length == 3) {
 
-					return true
-				}
+				return _.filter(_list, function(animal) {
+					if (
+						(keys_values[0].val == animal[keys_values[0].key] || keys_values[0].val == '') &&
+						(keys_values[1].val == animal[keys_values[1].key] || keys_values[1].val == '') &&
+						(animal[keys_values[2].key] && animal[keys_values[2].key].indexOf(keys_values[2].val) > -1 || keys_values[2].val == '')
+					) {
+						return true
+					}
+				})
 
-			})				
+			}
+
+			// return _.filter(_list, function(animal){		// old implementation before 27-08-14
+
+			// 	if( 
+			// 		(keys_values[0].val==animal[keys_values[0].key] || keys_values[0].val=='') &&
+			// 		(keys_values[1].val==animal[keys_values[1].key] || keys_values[1].val=='') &&
+			// 		(animal[keys_values[2].key].indexOf(keys_values[2].val) > -1 || keys_values[2].val=='')
+			// 	){
+			// 		return true
+			// 	}
+
+			// })
 
 		}
 
-		function get_keys_filter(){
+		function get_keys_filter() {
 
-			var values=new Array()
+			var values = new Array()
 
-			_.each($('select[data-attrleft]'),function(input){
-				values.push({key:$(input).data('attrleft'),val:$(input).val()})
+			_.each($('select[data-attrleft]'), function(input) {
+				values.push({
+					key: $(input).data('attrleft'),
+					val: $(input).val()
+				})
 			})
 
-			_.each($('input[data-attrleft]'),function(input){
-				values.push({key:$(input).data('attrleft'),val:$(input).val()})
+			_.each($('input[data-attrleft]'), function(input) {
+				values.push({
+					key: $(input).data('attrleft'),
+					val: $(input).val()
+				})
 			})
+
+			// temporary solution to make sure valnr is always last, to be fixed along with filter_left()
+			if (values[values.length - 1]['key'] != filter_type) {
+				var key_valnr
+				_.each(values, function(val, index) {
+					if (val['key'] == filter_type) {
+						key_valnr = val
+						values.splice(index, 1)
+						values.push(key_valnr)
+					}
+				})
+			}
 
 			return values
 		}
 
-		function find_animal(_list,_numer){
+		function find_animal(_list, _numer) {
 
-			return _.find(_list, function(animal){
-				if(_numer==animal['NUMER']){
+			return _.find(_list, function(animal) {
+				if (_numer == animal['NUMER']) {
 					return true
 				}
 			})
 		}
 
-		function remove_from_list(_list,_numer){
+		function remove_from_list(_list, _numer) {
 
-			return _.reject(_list,function(animal){
-				if(_numer==animal['NUMER']){
+			return _.reject(_list, function(animal) {
+				if (_numer == animal['NUMER']) {
 					return true
 				}
 			})
 		}
 
-		$("body").on("keyup change",".filter_left",function(event){
+		$("body").on("keyup change", ".filter_left", function(event) {
 			$("#animals_select_1").html('');
-			var filteredLeft=filter_left(leftList)
-			fill_list($("#animals_select_1"),filteredLeft)
-			$("#numbers_left").html("("+filteredLeft.length+")")
+			var filteredLeft = filter_left(leftList)
+			fill_list($("#animals_select_1"), filteredLeft)
+			$("#numbers_left").html("(" + filteredLeft.length + ")")
 		})
 
-		$("body").on("keyup change","#animals_filter_2",function(event){
+		$("body").on("keyup change", "#animals_filter_2", function(event) {
 			$("#animals_select_2").html('');
-			var filteredRight=filter_right(rightList,$("#animals_filter_2").val())
-			fill_list($("#animals_select_2"),filteredRight)
-			$("#numbers_right").html("("+filteredRight.length+")")
+			var filteredRight = filter_right(rightList, $("#animals_filter_2").val())
+			fill_list($("#animals_select_2"), filteredRight)
+			$("#numbers_right").html("(" + filteredRight.length + ")")
 		})
 
- 		this.get_selected=function(){
- 			return rightList
- 		}
+		this.get_selected = function() {
+			return rightList
+		}
 
- 		return this
+		return this
 
-    };  
+	};
+
+
+	$.fn.sort_select_box = function() {
+		// Get options from select box
+		var my_options = $("#" + this.attr('id') + ' option');
+		// sort alphabetically
+		my_options.sort(function(a, b) {
+				if (a.text > b.text) return 1;
+				else if (a.text < b.text) return -1;
+				else return 0
+			})
+		//replace with sorted my_options;
+		$(this).empty().append(my_options);
+
+		// clearing any selections
+		$("#" + this.attr('id') + " option").attr('selected', false);
+	}
+
 
 }));
